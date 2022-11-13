@@ -1,3 +1,7 @@
+# was originally targetting '16-arm64' for the image + lambda runtime but github
+# actions does not have a free arm runner to to do arm builds. (revisit)
+ARG node_image_tag=16
+
 ###############################################################################
 # Build
 ###############################################################################
@@ -5,7 +9,7 @@
 # The build step does an 'esbuild' of our typescript based lambda
 # function, producing a single index.js file for copying into our
 # final image
-FROM public.ecr.aws/lambda/nodejs:16-arm64 as builder
+FROM public.ecr.aws/lambda/nodejs:${node_image_tag} as builder
 WORKDIR /usr/app
 COPY package.json index.ts  ./
 RUN npm install
@@ -16,11 +20,14 @@ RUN npm run build
 # Bake
 ###############################################################################
 
-FROM public.ecr.aws/lambda/nodejs:16-arm64
+FROM public.ecr.aws/lambda/nodejs:${node_image_tag}
 
 ARG migrate_version=v4.15.2
 ARG migrate_platform=linux
-ARG migrate_arch=arm64
+# options: arm64 | amd64
+# was originally targetting arm64 for the image + lambda runtime but github
+# actions does not have a free arm runner to to do arm builds. (revisit)
+ARG migrate_arch=amd64
 
 # Install [migrate](https://github.com/golang-migrate/migrate)
 # We execute the cli version of migrate from our lambda function to trigger
